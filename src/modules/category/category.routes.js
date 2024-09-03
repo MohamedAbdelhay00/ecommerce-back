@@ -7,13 +7,15 @@ import {
   updateCategory,
 } from "./category.controller.js";
 import { uploadSingleFile } from "../../fileUpload/fileUpload.js";
+import subCategoryRouter from "../subCategory/subCategory.routes.js";
 
-const productRouter = Router();
-productRouter.route("/").post(uploadSingleFile('image', 'categories'), addCategory).get(allCategories);
-productRouter
+const categoryRouter = Router();
+categoryRouter.route("/").post(uploadSingleFile('image', 'categories'), addCategory).get(allCategories);
+categoryRouter.use("/:category/sub-categories", subCategoryRouter)
+categoryRouter
   .route("/:id")
   .get(getCategory)
   .put(uploadSingleFile('image', 'categories'), updateCategory)
   .delete(deleteCategory);
 
-export default productRouter;
+export default categoryRouter;

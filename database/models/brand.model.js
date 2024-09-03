@@ -23,4 +23,8 @@ const schema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
+schema.post('init', function(doc) {
+  doc.logo = "http://localhost:3000/uploads/brands/" + doc.logo;
+});
+
 export const Brand = mongoose.model("Brand", schema);
