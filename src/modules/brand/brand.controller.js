@@ -8,7 +8,7 @@ import path from 'path';
 
 const addBrand = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
-  req.body.logo = req.file.filename;
+  req.body.image = req.file.filename;
   const brand = new Brand(req.body);
   await brand.save();
   res.json({ message: "success", brand });
@@ -26,22 +26,18 @@ const getBrand = catchError(async (req, res, next) => {
 });
 
 const updateBrand = catchError(async (req, res, next) => {
-  // Find the brand first to get the old logo filename
   const brand = await Brand.findById(req.params.id);
 
   if (!brand) {
     return next(new AppError("Brand not found", 404));
   }
 
-  // Update slug if the name is changed
   if (req.body.name) {
     req.body.slug = slugify(req.body.name);
   }
 
-  // If a new file is uploaded, delete the old logo
   if (req.file) {
-    // Extract the filename from the URL
-    const oldLogoFilename = brand.logo.split('/').pop();
+    const oldLogoFilename = brand.image.split('/').pop();
     const oldLogoPath = path.resolve('uploads', 'brands', oldLogoFilename);
     console.log('Attempting to delete old logo at:', oldLogoPath);
 
@@ -59,10 +55,9 @@ const updateBrand = catchError(async (req, res, next) => {
       }
     });
 
-    req.body.logo = req.file.filename;
+    req.body.image = req.file.filename;
   }
 
-  // Update the brand with the new data
   const updatedBrand = await Brand.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
