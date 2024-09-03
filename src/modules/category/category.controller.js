@@ -5,6 +5,7 @@ import { catchError } from "../../middleware/catchError.js";
 import { deleteOne } from "../handlers/handlers.js";
 import fs from "fs";
 import path from "path";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 
 const addCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
@@ -15,8 +16,14 @@ const addCategory = catchError(async (req, res, next) => {
 });
 
 const allCategories = catchError(async (req, res, next) => {
-  const categories = await Category.find();
-  res.json({ message: "success", categories });
+  let apiFeatures = new ApiFeatures(Category.find(), req.query)
+    .pagination()
+    .fields()
+    .filter()
+    .sort()
+    .search();
+  const categories = await apiFeatures.mongooseQuery;
+  res.json({ message: "success", page: apiFeatures.pageNumber, categories });
 });
 
 const getCategory = catchError(async (req, res, next) => {
@@ -27,7 +34,7 @@ const getCategory = catchError(async (req, res, next) => {
 
 const updateCategory = catchError(async (req, res, next) => {
   const category = await Category.findById(req.params.id);
-  
+
   if (!category) {
     return next(new AppError("Category not found", 404));
   }
@@ -37,19 +44,23 @@ const updateCategory = catchError(async (req, res, next) => {
   }
 
   if (req.file) {
-    const oldImageFilename = category.image.split('/').pop();
-    const oldImagePath = path.resolve('uploads', 'categories', oldImageFilename);
-    console.log('Attempting to delete old image at:', oldImagePath);
+    const oldImageFilename = category.image.split("/").pop();
+    const oldImagePath = path.resolve(
+      "uploads",
+      "categories",
+      oldImageFilename
+    );
+    console.log("Attempting to delete old image at:", oldImagePath);
 
     fs.access(oldImagePath, fs.constants.F_OK, (err) => {
       if (err) {
-        console.error('Old image does not exist:', oldImagePath);
+        console.error("Old image does not exist:", oldImagePath);
       } else {
         fs.unlink(oldImagePath, (unlinkErr) => {
           if (unlinkErr) {
-            console.error('Failed to delete old image:', unlinkErr);
+            console.error("Failed to delete old image:", unlinkErr);
           } else {
-            console.log('Old image deleted successfully:', oldImagePath);
+            console.log("Old image deleted successfully:", oldImagePath);
           }
         });
       }
@@ -58,15 +69,17 @@ const updateCategory = catchError(async (req, res, next) => {
     req.body.image = req.file.filename;
   }
 
-  const updatedCategory = await Category.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const updatedCategory = await Category.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   res.json({ message: "success", category: updatedCategory });
 });
-
-
 
 const deleteCategory = deleteOne(Category);
 

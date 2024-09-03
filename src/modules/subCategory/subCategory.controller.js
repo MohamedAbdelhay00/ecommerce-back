@@ -1,8 +1,9 @@
 import slugify from "slugify";
-import { AppError } from "../../utils/appError.js"
+import { AppError } from "../../utils/appError.js";
 import { catchError } from "../../middleware/catchError.js";
 import { SubCategory } from "../../../database/models/subCategory.model.js";
 import { deleteOne } from "../handlers/handlers.js";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 
 const addSubCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
@@ -13,9 +14,17 @@ const addSubCategory = catchError(async (req, res, next) => {
 
 const allSubCategories = catchError(async (req, res, next) => {
   let filterObj = {};
-  if (req.params.category) filterObj.category = req.params.category;
-  const subCategories = await SubCategory.find(filterObj);
-  res.json({ message: "success", subCategories });
+  if (req.params.category) {
+    filterObj.category = req.query.category;
+  }
+  let apiFeatures = new ApiFeatures(SubCategory.find(filterObj), req.query)
+    .pagination()
+    .fields()
+    .filter()
+    .sort()
+    .search();
+  const categories = await apiFeatures.mongooseQuery;
+  res.json({ message: "success", page: apiFeatures.pageNumber, categories });
 });
 
 const getSubCategory = catchError(async (req, res, next) => {
@@ -26,10 +35,14 @@ const getSubCategory = catchError(async (req, res, next) => {
 
 const updateSubCategory = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.name);
-  const subCategory = await SubCategory.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const subCategory = await SubCategory.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
   subCategory || next(new AppError("Sub category not found", 404));
   !subCategory || res.json({ message: "success", subCategory });
 });

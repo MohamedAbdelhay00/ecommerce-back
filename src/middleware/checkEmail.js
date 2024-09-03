@@ -1,11 +1,20 @@
 import { User } from "../../database/models/user.model.js";
-import bcrypt from "bcrypt";
+import { AppError } from "../utils/appError.js";
 
-export const checkEmaill = async (req, res, next) => {
-  let isExsit = await User.findOne({ email: req.body.email });
-  if (isExsit) {
-    return res.status(409).json({ message: "Email already exist" });
+export const checkEmail = async (req, res, next) => {
+  try {
+    // Find the user with the email provided in the request body
+    let isExist = await User.findOne({ email: req.body.email });
+
+    // If the email already exists in the database, return an error
+    if (isExist) {
+      return next(new AppError("Email already exists", 409));
+    }
+
+    // If the email does not exist, proceed to the next middleware or route handler
+    next();
+  } catch (error) {
+    // Handle any unexpected errors
+    next(error);
   }
-  req.body.password = await bcrypt.hash(req.body.password, 10);
-  next();
 };

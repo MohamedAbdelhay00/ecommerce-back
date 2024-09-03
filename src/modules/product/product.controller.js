@@ -5,6 +5,7 @@ import { Product } from "../../../database/models/product.model.js";
 import { deleteOne } from "../handlers/handlers.js";
 import fs from "fs";
 import path from "path";
+import { ApiFeatures } from "../../utils/ApiFeatures.js";
 
 const addProduct = catchError(async (req, res, next) => {
   req.body.slug = slugify(req.body.title);
@@ -16,21 +17,14 @@ const addProduct = catchError(async (req, res, next) => {
 });
 
 const allProducts = catchError(async (req, res, next) => {
-  let pageNumber = req.query.page * 1 || 1;
-  if (req.query.page < 1) pageNumber = 1;
-  const limit = 1;
-  let skip = (parseInt(pageNumber) - 1) * limit;
-
-  let filterObj = structuredClone(req.query);
-  filterObj = JSON.stringify(filterObj);
-  filterObj = filterObj.replace(/(gte|gt|lte|lt)/g, (value) => `$${value}`);
-  filterObj = JSON.parse(filterObj);
-
-  let excludedFields = ["page", "sort", "fields", "search"];
-  excludedFields.forEach((el) => delete filterObj[el]);
-
-  const product = await Product.find(filterObj).skip(skip).limit(limit);
-  res.json({ message: "success", pageNumber, product });
+  let apiFeatures = new ApiFeatures(Product.find(), req.query)
+    .pagination()
+    .fields()
+    .filter()
+    .sort()
+    .search();
+  const product = await apiFeatures.mongooseQuery;
+  res.json({ message: "success", page: apiFeatures.pageNumber, product });
 });
 
 const getProduct = catchError(async (req, res, next) => {
