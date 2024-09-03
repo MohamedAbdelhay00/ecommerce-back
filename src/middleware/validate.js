@@ -1,4 +1,4 @@
-import { AppError } from "../utils/appError";
+import { AppError } from "../utils/appError.js";
 
 export const validate = (schema) => {
   return async (req, res, next) => {
