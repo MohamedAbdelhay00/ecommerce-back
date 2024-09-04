@@ -31,9 +31,9 @@ const signin = catchError(async (req, res, next) => {
 });
 
 const changePassword = catchError(async (req, res, next) => {
-    console.log("req.user:", req.user); // Add this line to check if req.user is correctly set
+    console.log("req.user:", req.user);
 
-    const user = await User.findById(req.user._id); // Use req.user._id instead of req.user.userId
+    const user = await User.findById(req.user._id);
     
     if (!user) {
         return next(new AppError("User not found", 404));
@@ -45,7 +45,6 @@ const changePassword = catchError(async (req, res, next) => {
         return next(new AppError("Invalid password", 401));
     }
 
-    // Hash the new password before saving it
     const hashedNewPassword = bcrypt.hashSync(req.body.newPassword, 12);
 
     await User.findByIdAndUpdate(req.user._id, {
@@ -72,12 +71,12 @@ const protectedRoute = catchError(async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    console.log('Token:', token); // Debugging token
+    console.log('Token:', token);
 
     let userPayload;
     try {
         userPayload = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('User Payload:', userPayload); // Debugging user payload
+        console.log('User Payload:', userPayload);
     } catch (err) {
         return next(new AppError("Invalid token", 401));
     }
@@ -87,9 +86,8 @@ const protectedRoute = catchError(async (req, res, next) => {
         return next(new AppError("Unauthorized", 401));
     }
 
-    // Set user data in req.user for access in other routes
     req.user = user;
-    console.log('Protected route user:', req.user); // Debugging user
+    console.log('Protected route user:', req.user);
     
     next();
 });

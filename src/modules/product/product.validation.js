@@ -8,8 +8,10 @@ const productValidationSchema = Joi.object({
   category: Joi.string().required(),
   subCategory: Joi.string().optional(),
   brand: Joi.string().optional(),
-  imageCover: Joi.any().optional(), // To allow file upload for imageCover
-  images: Joi.any().optional(),     // To allow file upload for images
+  imageCover: Joi.any().optional(),
+  images: Joi.any().optional(),
+  stock: Joi.number().min(0).required(),
+  sold: Joi.number().min(0).optional(),
 });
 
 export { productValidationSchema };

@@ -34,29 +34,24 @@ const getProduct = catchError(async (req, res, next) => {
 });
 
 const updateProduct = catchError(async (req, res, next) => {
-  // Log the incoming data for debugging
   console.log("Incoming Request Data:", {
     body: req.body,
     file: req.file,
     files: req.files,
   });
 
-  // Find the product first to get the old image filenames
   const product = await Product.findById(req.params.id);
 
   if (!product) {
     return next(new AppError("Product not found", 404));
   }
 
-  // Update slug if the title is changed
   if (req.body.title) {
     req.body.slug = slugify(req.body.title);
   }
 
-  // Debugging: Log product's current imageCover
   console.log("Current product imageCover:", product.imageCover);
 
-  // Delete old imageCover if a new one is uploaded
   if (req.files && req.files.imageCover) {
     console.log(
       "New imageCover file detected:",
@@ -94,7 +89,6 @@ const updateProduct = catchError(async (req, res, next) => {
     console.log("No new imageCover file detected");
   }
 
-  // Delete old images if new ones are uploaded
   if (req.files && req.files.images) {
     product.images.forEach((image) => {
       const oldImageFilename = image.split("/").pop();
@@ -124,10 +118,8 @@ const updateProduct = catchError(async (req, res, next) => {
     console.log("Updated req.body.images:", req.body.images);
   }
 
-  // Log before the update to ensure it is being called
   console.log("Updating product with data:", req.body);
 
-  // Update the product with the new data
   const updatedProduct = await Product.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -137,10 +129,8 @@ const updateProduct = catchError(async (req, res, next) => {
     }
   );
 
-  // Log the result of the update
   console.log("Updated Product:", updatedProduct);
 
-  // Check if the update was successful
   if (!updatedProduct) {
     return next(new AppError("Failed to update product", 500));
   }
