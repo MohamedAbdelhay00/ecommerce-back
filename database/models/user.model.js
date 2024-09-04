@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import bcrypt from "bcrypt"
+import mongoose, { Types } from "mongoose";
+import bcrypt from "bcrypt";
 
 const schema = new mongoose.Schema(
   {
@@ -15,6 +15,8 @@ const schema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    wishlist: [{ type: Types.ObjectId, ref: "Product" }],
+    addresses: [{ city: String, phone: String, street: String }],
   },
   { timestamps: true, versionKey: false }
 );

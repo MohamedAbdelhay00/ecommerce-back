@@ -60,8 +60,18 @@ const schema = new mongoose.Schema(
       ref: "User",
     },
   },
-  { timestamps: true, versionKey: false }
+  { timestamps: true, versionKey: false, toJSON: { virtuals: true } }
 );
+
+schema.virtual("myReviews", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "product",
+})
+
+schema.pre('findOne', function() {
+  this.populate('myReviews');
+});
 
 schema.post('init', function(doc) {
   if(doc.imageCover) doc.imageCover = "http://localhost:3000/uploads/products/" + doc.imageCover;

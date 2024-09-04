@@ -23,4 +23,9 @@ const schema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
+schema.pre(/^find/, function(next) {
+  this.populate('user');
+  next();
+});
+
 export const Review = mongoose.model("Review", schema);

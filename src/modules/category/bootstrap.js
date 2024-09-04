@@ -4,6 +4,7 @@ import productRouter from "../product/product.routes.js"
 import categoryRouter from "./category.routes.js"
 import userRouter from "../users/user.routes.js"
 import authRouter from "../auth/auth.routes.js"
+import reviewRouter from "../reviews/review.routes.js"
 
 export const bootstrap = (app) => {
     app.use('/api/categories', categoryRouter)
@@ -12,4 +13,5 @@ export const bootstrap = (app) => {
     app.use('/api/products', productRouter)
     app.use('/api/users', userRouter)
     app.use('/api/auth/', authRouter)
+    app.use('/api/reviews', reviewRouter)
 }
